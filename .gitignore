@@ -1,5 +1,6 @@
-# Flutter / Dart
+# Flutter/Dart/Node
 /build/
+node_modules/
 
 # IDE
 .idea
