@@ -11,6 +11,10 @@ ProfileModel _$ProfileModelFromJson(Map<String, dynamic> json) => ProfileModel(
       last_name: json['last_name'] as String?,
       username: json['username'] as String?,
       email: json['email'] as String?,
+      bio: json['bio'] as String?,
+      verified: json['verified'] as bool?,
+      following_count: (json['following_count'] as num?)?.toInt(),
+      follower_count: (json['follower_count'] as num?)?.toInt(),
       bio: json['bio'] as String? ?? '',
       profile_image: json['profile_image'] as String? ?? '',
       created_at: json['created_at'] == null
