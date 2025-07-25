@@ -51,6 +51,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _getFollowing();
     fetchUserPosts();
     // _getPostsFirst();
+    // _controller = ScrollController()..addListener(_loadMorePosts);
     scrollController.addListener(_scrollListener);
    }
 
@@ -109,6 +110,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
     }
 
+
+
     void _getUserInfo() async{
       setState(() {
         _firstLoadingRunning = true;
@@ -144,6 +147,8 @@ class _ProfilePageState extends State<ProfilePage> {
       
   }
 
+
+
   void _getFollowers() async {
 
      String token = await secureStorage.read('token');
@@ -153,44 +158,83 @@ class _ProfilePageState extends State<ProfilePage> {
       String URL = '${globals.base_url}/users/${userId}/followers';
 
       final response = await http.get(
-        Uri.parse(URL),
-       headers: {
-          "Content-Type": "application/json",
+      Uri.parse("$URL?page=$_page&limit$_limit"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
         },
       );
-    
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        print("Successfully obtained followers: ${responseData}");
-        follower_count = responseData["data"]["numberOfFollowers"];
-      } else {
-        print("Could not obtained followers: ${response.body}");
+
+      final responseData = jsonDecode(response.body);
+      final postList = responseData["data"];
+      setState(() {
+        posts = postList;
+        print("List of Posts: ${posts}");
+      });
+
+    } catch (error) {
+      if (kDebugMode) {
+        print("Something went wrong");
       }
+    }
+
+    setState(() {
+      _firstLoadingRunning = false;
+    });
+    
   }
 
 
-  void _getFollowing() async {
 
-     String token = await secureStorage.read('token');
-      var decodedToken = JwtDecoder.decode(token);
-      String userId = decodedToken['userId'];
+    void _loadMorePosts() async {
+      String token = await secureStorage.read('token');
 
-      String URL = '${globals.base_url}/users/${userId}/following';
+      const String URL = 'https://inscribed-22337aee4c1b.herokuapp.com/api/user/get-posts';
+      if (_hasNextPage == true &&
+        _firstLoadingRunning == false && _isLoadMoreRunning == false &&
+        _controller.position.extentAfter < 300
+        ) {
 
-      final response = await http.get(
-        Uri.parse(URL),
-       headers: {
-          "Content-Type": "application/json",
-        },
-      );
-    
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        print("Successfully obtained following: ${responseData}");
-        following_count = responseData["data"]["numberOfFollowing"];
-        followers = responseData["data"]["following"] as List;
-      } else {
-        print("Could not obtained following: ${response.body}");
+            setState(() {
+              _isLoadMoreRunning = true;
+            });
+
+          _page += 1;
+
+          try {
+            final response = await http.get(
+            Uri.parse("$URL?page=$_page&limit$_limit"),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token"
+              },
+            );
+
+            final responseData = jsonDecode(response.body);
+            final postList = responseData["data"] as List;
+
+            if (postList.isNotEmpty) {
+              setState(() {
+              posts.addAll(postList);
+              //print("List of Posts: ${posts}");
+              });
+            } else {
+              setState(() {
+                _hasNextPage = false;
+              });
+            }
+           
+
+          } catch (error) {
+            if (kDebugMode) {
+              print("${error}");
+            }
+          }
+          
+
+            setState(() {
+              _isLoadMoreRunning = false;
+            });
       }
   }
    
