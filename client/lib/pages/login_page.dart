@@ -45,7 +45,10 @@ class _LoginPageState extends State<LoginPage> {
 
       //API endpoint url
       String URL = '${globals.base_url}/auth/login';
+      //const String URL = 'https://inscribed-22337aee4c1b.herokuapp.com/api/auth/login';
+      //final String URL = 'http://10.0.2.2:5000/api/auth/login';
 
+    try{
       //Call the API endpoint 
       final response = await http.post(
         Uri.parse(URL),
@@ -94,7 +97,10 @@ class _LoginPageState extends State<LoginPage> {
 
         ScaffoldMessenger.of(context).showSnackBar(snackbar);
       }
-
+  } catch (e){
+      // Handle client-side errors
+      print('Error during login: $e');
+  }
   }
 
 
